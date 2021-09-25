@@ -61,14 +61,14 @@ func DeleteItem(w http.ResponseWriter, r *http.Request) {
 		 }
 	} 
 
-func GetItemById(Id int) bool {
+func GetItemByID(Id int) bool {
 	todo := &TodoItemModel{}
-	result := db.Fist(&todo, Id)
-	if result.Errorr != nil{
+	result := db.First(&todo, Id)
+	if result.Error != nil{
 		log.Warn("TodoItem not found in database")
 		return false
 	}
-	returrn true
+	return true
 }
 
 func GetCompletedItems(w http.ResponseWriter, r *http.Request) {
@@ -85,7 +85,7 @@ func GetInCompletedItems(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(IncompletedTodoItems)
 }
 
-func GetTodoItems(completed bool) interfaqce{} {
+func GetTodoItems(completed bool) interface{} {
 	var todos []TodoItemModel
 	TodoItems := db.Where("completed = ?", completed).Find(&todos).Value
 	return TodoItems
@@ -126,5 +126,10 @@ func main() {
 	router.HandleFunc("/todo", CreateItem).Methods("POST")
 	router.HandleFunc("/todo/{id}", UpdateItem).Methods("POST")
 	router.HandleFunc("/todo/{id}", DeleteItem).Methods("DELETE")
-	http.ListenAndServe(":8000", router)
+	
+	handler := cors.New(cors.Options{
+	AllowedMethods: []string{"GET", "POST", "DELETE", "PATCH", "OPTIONS"},
+	}).Handler(router)
+	
+	http.ListenAndServe(":8000", handler)
 }
